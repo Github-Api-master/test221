@@ -1,0 +1,48 @@
+version: 2.1
+
+jobs:
+  test:
+    description: Run tests
+    working_directory: ~/blueprint1
+    docker:
+      - image: circleci/openjdk:8u222-node
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-node-dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install npm dependencies
+          command: npm install
+      - save_cache:
+          key: v1-node-dependencies-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: Run Unit test cases
+          command: npm test
+  build:
+    description: Build application
+    working_directory: ~/blueprint1
+    docker:
+      - image: circleci/openjdk:8u222-node
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-node-dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install npm dependencies
+          command: npm install
+      - save_cache:
+          key: v1-node-dependencies-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+  
+workflows:
+  test_and_build:
+    jobs:
+      - test
+      - build:
+          requires:
+            - test
